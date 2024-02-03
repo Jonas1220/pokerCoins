@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PokerCoins",
-    "slug": "PokerCoins",
+    "name": "pokerCoins",
+    "slug": "pokerCoins",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

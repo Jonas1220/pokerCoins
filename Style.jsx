@@ -12,5 +12,11 @@ export default StyleSheet.create({
         borderWidth:1,
         width: 100,
         padding:5
+    },
+    playerView: {
+        borderWidth:1,
+        borderColor: 'black',
+        padding:5,
+        
     }
 });

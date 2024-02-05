@@ -1,22 +1,34 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react';
 import uuid from 'react-native-uuid';
 import { Button, Text, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Style from './Style';
 
 
 export default function PrepareGame({start}) {
-    const [totalAmount, setTotalAmount] = useState(100);
+    const [totalAmount, setTotalAmount] = useState(1000);
+    const [bigBlind, setBigBlind] = useState(40);
+    const [smallBlind, setSmallBlind] = useState(20);
     const [players, setPlayers] = useState([{id:uuid.v4(),name:'',amount:0}]);
     // const [gameStart, setGameStart] = useState(false);
+
+    useEffect(()=>{
+        const checkIfGameStart = async () => {
+            // console.log('test');
+            const check = await AsyncStorage.getItem('@gameData');
+            // const check = await AsyncStorage.setItem('@gameData','playerData');
+            if (check) { start(true) }
+        }
+        checkIfGameStart();
+    },[])
 
     const addPlayer = () => {
         setPlayers([...players,{id:uuid.v4(),name:'',amount:0}])
     }
-
     const updatePlayers = (newValue,id) => {
-        console.log(newValue);
+        // console.log(newValue);
         const updatedData = [...players];
     
         // Suche das Objekt mit der spezifizierten ID
@@ -34,10 +46,7 @@ export default function PrepareGame({start}) {
             setPlayers(updatedData);
         }
     }
-    const testFunction = () => {
-        console.log(players);
-    }
-    const startGame = () => {
+    const startGame = async () => {
         const updatedData = players.map(obj => ({
             ...obj,
             amount: totalAmount,
@@ -45,12 +54,35 @@ export default function PrepareGame({start}) {
       
         // Setze den aktualisierten Zustand
         setPlayers(updatedData);
+        const gameData = {
+            big:bigBlind,
+            small:smallBlind,
+            playerData:updatedData
+        }
+        await AsyncStorage.setItem('@gameData',JSON.stringify(gameData));
         start(true);
-        console.log(updatedData);
+        // console.log(updatedData);
+    }
+
+
+
+    const testFunction = async () => {
+        // const check = await AsyncStorage.setItem('gameData','playerData');
+        // try {
+        //     // await AsyncStorage.setItem('my-key', 'test');
+        //     // await AsyncStorage.clear();
+        //     // const check = await AsyncStorage.getItem('my-key');
+        //     // console.log(check);
+        // } catch (e) {
+            //     // saving error
+            // }
+                console.log(players);
     }
     return (
         <View style={Style.container}>
-            <TextInput keyboardType="numeric" onChangeText={(e)=>setTotalAmount(e)} defaultValue={'100'} placeholder={'Start Chips'} style={Style.input}/>
+            <TextInput keyboardType="numeric" onChangeText={(e)=>setTotalAmount(e)} defaultValue={'1000'} placeholder={'Start Chips'} style={Style.input}/>
+            <TextInput keyboardType="numeric" onChangeText={(e)=>setSmallBlind(e)} defaultValue={'20'} placeholder={'Small Blind'} style={Style.input}/>
+            <TextInput keyboardType="numeric" onChangeText={(e)=>setBigBlind(e)} defaultValue={'40'} placeholder={'Big Blind'} style={Style.input}/>
             <Text>Player</Text>
             {players.map(player => {
                 return <TextInput key={player.id} style={Style.input} value={player.name} onChangeText={(e)=>updatePlayers(e,player.id)} placeholder={'Name'} />

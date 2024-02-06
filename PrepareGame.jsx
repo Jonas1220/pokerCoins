@@ -57,7 +57,8 @@ export default function PrepareGame({start}) {
         const gameData = {
             big:bigBlind,
             small:smallBlind,
-            playerData:updatedData
+            playerData:updatedData,
+            playerIn:true
         }
         await AsyncStorage.setItem('@gameData',JSON.stringify(gameData));
         start(true);

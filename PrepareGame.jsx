@@ -11,7 +11,7 @@ export default function PrepareGame({start}) {
     const [totalAmount, setTotalAmount] = useState(1000);
     const [bigBlind, setBigBlind] = useState(40);
     const [smallBlind, setSmallBlind] = useState(20);
-    const [players, setPlayers] = useState([{id:uuid.v4(),name:'',amount:0}]);
+    const [players, setPlayers] = useState([{id:uuid.v4(),name:'',amount:0,playerIn:true,bid:0,checked:false}]);
     // const [gameStart, setGameStart] = useState(false);
 
     useEffect(()=>{
@@ -25,7 +25,7 @@ export default function PrepareGame({start}) {
     },[])
 
     const addPlayer = () => {
-        setPlayers([...players,{id:uuid.v4(),name:'',amount:0}])
+        setPlayers([...players,{id:uuid.v4(),name:'',amount:0,playerIn:true,bid:0,checked:false}])
     }
     const updatePlayers = (newValue,id) => {
         // console.log(newValue);
@@ -57,8 +57,7 @@ export default function PrepareGame({start}) {
         const gameData = {
             big:bigBlind,
             small:smallBlind,
-            playerData:updatedData,
-            playerIn:true
+            playerData:updatedData
         }
         await AsyncStorage.setItem('@gameData',JSON.stringify(gameData));
         start(true);

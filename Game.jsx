@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Text, TextInput, View } from 'react-native'
+import { Button, LogBox, Text, TextInput, View } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Style from './Style';
 
@@ -7,13 +7,13 @@ export default function Game() {
     const [bigBlind, setBigBlind] = useState(0);
     const [smallBlind, setSmallBlind] = useState(0);
     const [players, setPlayers] = useState();
-    const [playersIn, setPlayersIn] = useState();
+    // const [playersIn, setPlayersIn] = useState();
 
-    const [startRound, setStartRound] = useState(false);
+    // const [startRound, setStartRound] = useState(false);
     const [phase, setPhase] = useState(0);
     const [playersTurn, setPlayersTurn] = useState(0);
     const [currentBid, setCurrentBid] = useState(0);
-    const [checkPossible, setCheckPossible] = useState(true);
+    const [checkPossible, setCheckPossible] = useState(false);
     
 
     useEffect(()=>{
@@ -28,17 +28,18 @@ export default function Game() {
         }
         checkGameData();
     },[])
-    useEffect(()=>{
-        if (startRound) setPlayersIn(players?.map((player)=>player.id));
-    },[startRound])
+    // useEffect(()=>{
+    //     if (startRound) setPlayersIn(players?.map((player)=>player.id));
+    // },[startRound])
 
-    const handleNextPlayer = async () => {
-        if (playersTurn==players.length-1) setPlayersTurn(0)
-        else setPlayersTurn(playersTurn+1)
+    const handleNextPlayer = async (num) => {
+        if (num==players.length-1) { handleNextPlayer(-1) }
+        else if (players[num+1]['playerIn']==false) { handleNextPlayer(num+1) }
+        else { setPlayersTurn(num+1) }
     }
 
     const testFunction = async () => {
-        console.log(playersIn);
+        console.log(players);
         // NOTE: make the queue, just go through the players
     }
 
@@ -62,17 +63,61 @@ export default function Game() {
         }
 
     }
-    const check = () => {}
-    const raise = () => {}
-    const call = () => {}
+    const nextPhase = () => {
+        console.log('nextPhase');
+    }
+    const check = () => {
+        const updatedData = [...players];
+    
+        // Suche das Objekt mit der spezifizierten ID
+        const updatedObjectIndex = updatedData.findIndex(obj => obj.id === players[playersTurn]['id']);
+        
+        // Überprüfe, ob das Objekt gefunden wurde
+        if (updatedObjectIndex !== -1) {
+            // Aktualisiere den Wert des gefundenen Objekts
+            updatedData[updatedObjectIndex] = {
+                ...updatedData[updatedObjectIndex],
+                checked: true,
+            };
+            const checkIfAllCheck = updatedData.findIndex(obj => obj.checked === false);
+            if (checkIfAllCheck==-1) nextPhase();
+            // Setze den aktualisierten Zustand
+            setPlayers(updatedData);
+            
+        }
+        handleNextPlayer(playersTurn)
+    }
+    const raise = () => {console.log('raise');}
+    const call = () => {console.log('call');}
     const fold = () => {
-        const updatedData = [...playersIn];
-        const updatedObjectIndex = updatedData.filter((obj) => obj !== players[playersTurn]['id'])
-        setPlayersIn(updatedObjectIndex);
-        handleNextPlayer()
+        console.log('fold');
+        // currentBid
+        const updatedData = [...players];
+    
+        // Suche das Objekt mit der spezifizierten ID
+        const updatedObjectIndex = updatedData.findIndex(obj => obj.id === players[playersTurn]['id']);
+        
+        // Überprüfe, ob das Objekt gefunden wurde
+        if (updatedObjectIndex !== -1) {
+            // Aktualisiere den Wert des gefundenen Objekts
+            updatedData[updatedObjectIndex] = {
+                ...updatedData[updatedObjectIndex],
+                playerIn: false,
+            };
+            // NOTE: find the remaining 
+            const checkIfAllFold = updatedData.find(obj => obj.playerIn === false); 
+            console.log(checkIfAllFold)
+            // if (checkIfAllFold==-1) nextPhase();
+            // Setze den aktualisierten Zustand
+            setPlayers(updatedData);
+        }
+        // const updatedData = [...playersIn];
+        // const updatedObjectIndex = updatedData.filter((obj) => obj !== players[playersTurn]['id'])
+        // setPlayersIn(updatedObjectIndex);
+        handleNextPlayer(playersTurn)
     }
 
-    return startRound ? (
+    return (
         <View>
             <Text>Phase: {phase}</Text>
             {players?.length && <Text>{players[playersTurn]['name']}</Text>}
@@ -84,14 +129,12 @@ export default function Game() {
 
 
 
-            {checkPossible ? <Button title='CHECKs' onPress={fold} /> : <Button title='FOLD' onPress={fold} />}
+            {checkPossible ? <Button title='CHECK' onPress={check} /> : <Button title='FOLD' onPress={fold} />}
 
 
             <View style={{borderBottomColor: 'black',borderBottomWidth: 1,}}/>
             <Button title='TEST' onPress={testFunction} />
-            <Button title='next' onPress={handleNextPlayer} />
+            <Button title='next' onPress={()=>handleNextPlayer(playersTurn)} />
         </View>
-    ) : (
-        <Button title='START' onPress={()=>setStartRound(true)} />
     )
 }
